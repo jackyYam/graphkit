@@ -1,9 +1,9 @@
-import NxWelcome from './nx-welcome';
+import { Router } from '@/components/Router';
 
 export function App() {
   return (
     <div>
-      <NxWelcome title="graphkit" />
+<Router />
     </div>
   );
 }
