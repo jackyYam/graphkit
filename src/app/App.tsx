@@ -2,7 +2,7 @@ import { Router } from '@/components/Router'
 
 export function App() {
   return (
-    <div>
+    <div className="h-screen">
       <Router />
     </div>
   )
