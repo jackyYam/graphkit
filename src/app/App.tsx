@@ -1,11 +1,11 @@
-import { Router } from '@/components/Router';
+import { Router } from '@/components/Router'
 
 export function App() {
   return (
     <div>
-<Router />
+      <Router />
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
