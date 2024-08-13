@@ -1,6 +1,8 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Layout from './Layout'
-
+import Graph from './Graph'
+import { MyDiagram } from './Regraph'
+import ForceGraph from './ForceGraph'
 const router = createBrowserRouter([
   {
     path: '/',
@@ -9,19 +11,19 @@ const router = createBrowserRouter([
     children: [
       {
         path: '',
-        element: <div>Page 1</div>,
+        element: <Graph />,
       },
       {
         path: 'page1',
-        element: <div>Page 1</div>,
+        element: <MyDiagram />,
       },
       {
         path: 'page2',
-        element: <div>Page 2</div>,
+        element: <MyDiagram />,
       },
       {
         path: 'page3',
-        element: <div>Page 3</div>,
+        element: <ForceGraph />,
       },
     ],
   },
