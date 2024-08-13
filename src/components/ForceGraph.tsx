@@ -29,6 +29,27 @@ const ForceGraph = () => {
   const [selectedNode, setSelectedNode] = useState<string | null>(null)
   const width = 1000
   const height = 650
+  const [highlightNodes, setHighlightNodes] = useState(new Set())
+  const [highlightLinks, setHighlightLinks] = useState(new Set())
+  const [hoverNode, setHoverNode] = useState<NodeObject | null>(null)
+
+  const updateHighlight = () => {
+    setHighlightNodes(highlightNodes)
+    setHighlightLinks(highlightLinks)
+  }
+
+  const handleNodeHover = (node: NodeObject | null) => {
+    highlightNodes.clear()
+    highlightLinks.clear()
+    if (node) {
+      highlightNodes.add(node)
+      node.neighbors.forEach((neighbor: NodeObject) => highlightNodes.add(neighbor))
+      node.links.forEach((link: LinkObject) => highlightLinks.add(link))
+    }
+
+    setHoverNode(node || null)
+    updateHighlight()
+  }
 
   useEffect(() => {
     figRef.current?.d3Force('link')?.distance(30).strength(0.2)
@@ -141,11 +162,40 @@ const ForceGraph = () => {
             width,
             height,
           })
+        } else if (node === hoverNode) {
+          drawNodeRing({
+            x,
+            y,
+            radius,
+            offset: ringOffset,
+            ringWidth,
+            ringColor: 'red',
+            ctx,
+            globalScale,
+            width,
+            height,
+          })
+        } else if (highlightNodes.has(node)) {
+          drawNodeRing({
+            x,
+            y,
+            radius,
+            offset: ringOffset,
+            ringWidth,
+            ringColor: 'yellow',
+            ctx,
+            globalScale,
+            width,
+            height,
+          })
         }
       }}
+      onNodeHover={handleNodeHover}
       enableNodeDrag
       onNodeClick={handleNodeClick}
       linkCanvasObjectMode={() => 'after'}
+      linkDirectionalParticles={4}
+      linkDirectionalParticleWidth={(link) => (highlightLinks.has(link) ? 4 : 0)}
       linkCanvasObject={(link, ctx, globalScale) => {
         if (globalScale < 3) {
           return // Do not render the label if the zoom level is below the threshold
