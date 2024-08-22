@@ -3,6 +3,7 @@ import Layout from './Layout'
 import Graph from './Graph'
 import { MyDiagram } from './Regraph'
 import ForceGraph from './ForceGraph'
+import MainGraph from './main'
 const router = createBrowserRouter([
   {
     path: '/',
@@ -11,19 +12,19 @@ const router = createBrowserRouter([
     children: [
       {
         path: '',
-        element: <Graph />,
+        element: <div>hola</div>,
       },
       {
         path: 'page1',
-        element: <MyDiagram />,
+        element: <div>hola</div>,
       },
       {
         path: 'page2',
-        element: <MyDiagram />,
+        element: <div>hola</div>,
       },
       {
         path: 'page3',
-        element: <ForceGraph />,
+        element: <MainGraph />,
       },
     ],
   },

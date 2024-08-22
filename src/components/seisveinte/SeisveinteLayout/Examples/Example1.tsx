@@ -62,7 +62,7 @@ export function Example1() {
             <UnholsterLogo />
           </div>
         </SeisveinteLayout.Sidebar>
-        <div className="flex w-full flex-col">
+        <div className="flex w-full flex-col h-screen">
           <SeisveinteLayout.ContentTopbar />
           <SeisveinteLayout.Content>Content</SeisveinteLayout.Content>
         </div>

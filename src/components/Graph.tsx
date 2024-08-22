@@ -9,7 +9,7 @@ import {
   useReactFlow,
 } from '@xyflow/react'
 import { Button } from './ui/button'
-import { initialNodes, initialEdges } from './nodes-edges'
+import { initialNodes, initialEdges } from './nodesEdgesTypes'
 import '@xyflow/react/dist/style.css'
 import type { Node, Edge } from '@xyflow/react'
 import CustomNode from './CustomNode'

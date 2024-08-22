@@ -71,7 +71,7 @@ export default function Layout() {
           <UnholsterLogo />
         </div>
       </SeisveinteLayout.Sidebar>
-      <div className="flex w-full flex-col">
+      <div className="flex w-full flex-col h-screen">
         <SeisveinteLayout.ContentTopbar />
         <SeisveinteLayout.Content>
           <Outlet />

@@ -1,108 +1,106 @@
-import type { NodeObject, LinkObject } from 'react-force-graph-2d'
-export const categories = {
+import { ForceGraphInputType, NodeCategories } from '@/components/nodesEdgesTypes'
+import { LinkObject } from 'react-force-graph-2d'
+export const categories: NodeCategories = {
   people: {
     es: 'Persona',
     color: '#27AE60',
+    secondColor: '#BEE7CF',
   },
   document: {
     es: 'Documento',
     color: '#333333',
+    secondColor: '#C3C3C3',
   },
   place: {
     es: 'Lugar',
     color: '#2F80ED',
+    secondColor: '#C0E1F4',
   },
   event: {
     es: 'Evento',
     color: '#F2C94C',
+    secondColor: '#FBEFC9',
   },
   organization: {
     es: 'Organización',
     color: '#FE7300',
+    secondColor: '#FFD5B3',
   },
 }
-type Category = keyof typeof categories
-
-type CustomNodeObject = NodeObject & {
-  category: Category
+export type TestCategory = keyof typeof categories
+type TestNode = {
+  id: string
+  type: string
+  category: TestCategory
+  data: {
+    label: string
+  }
 }
-
-export const initialNodes: CustomNodeObject[] = [
+export const initialNodes: TestNode[] = [
   {
     id: 'main',
     type: 'custom',
-    data: { label: 'Alberto Armador' },
-    position: { x: 0, y: 50 },
     category: 'people',
+    data: { label: 'Alberto Armador' },
   },
   {
     id: 'd1',
     type: 'custom',
     data: { label: 'Doc 1' },
     category: 'document',
-    position: { x: 0, y: 100 },
   },
   {
     id: 'd2',
     type: 'custom',
     data: { label: 'Doc 2' },
-    position: { x: 0, y: 100 },
     category: 'document',
   },
   {
     id: 'd3',
     type: 'custom',
     data: { label: 'Doc 3' },
-    position: { x: 0, y: 100 },
     category: 'document',
   },
   {
     id: 'p1',
     type: 'custom',
     data: { label: 'Persona 1' },
-    position: { x: 0, y: 200 },
     category: 'people',
   },
   {
     id: 'p2',
     type: 'custom',
     data: { label: 'Persona 2' },
-    position: { x: 0, y: 200 },
     category: 'people',
   },
   {
     id: 'p3',
     type: 'custom',
     data: { label: 'Persona 3' },
-    position: { x: 0, y: 200 },
     category: 'people',
   },
   {
     id: 'l1',
     type: 'custom',
     data: { label: 'Lugar 1' },
-    position: { x: 0, y: 300 },
     category: 'place',
   },
   {
     id: 'l2',
     type: 'custom',
     data: { label: 'Lugar 2' },
-    position: { x: 0, y: 300 },
     category: 'place',
   },
   {
     id: 'o1',
     type: 'custom',
     data: { label: 'Organizacion 1' },
-    position: { x: 0, y: 400 },
     category: 'organization',
   },
   {
     id: 'e1',
     type: 'custom',
     data: { label: 'Evento tortura' },
-    position: { x: 0, y: 500 },
     category: 'event',
   },
 ]
@@ -122,31 +120,53 @@ export const initialEdges: LinkObject[] = [
   { id: 'p3d2', source: 'p3', target: 'd2' },
 ]
 
-export function hexToRgba(hex: string, alpha: number): string {
-  const bigint = parseInt(hex.slice(1), 16)
-  const r = (bigint >> 16) & 255
-  const g = (bigint >> 8) & 255
-  const b = bigint & 255
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`
+export type NodeData = {
+  [key: string]: {
+    [key: string]: string
+  }
 }
 
-const forceGraphData: {
-  nodes: NodeObject[]
-  links: LinkObject[]
-} = {
+export type TestNodeData = {
+  platform: {
+    [key: string]: string
+  }
+  sddhh: {
+    [key: string]: string
+  }
+}
+
+const forceGraphData: ForceGraphInputType<TestNodeData> = {
   nodes: initialNodes.map((node) => ({
     id: node.id,
-    name: node.data.label,
+    label: node.data.label,
     val: 15,
-    category: node.data.category,
+    category: node.category,
     isMain: node.id === 'main',
     color: categories[node.category].color,
-    secondColor: hexToRgba(categories[node.category].color, 0.6),
+    secondColor: categories[node.category].secondColor,
+    data: {
+      platform: {
+        apodo: 'Roncho',
+        género: 'Masculino',
+        rut: '12.345.678-9',
+        'fehca de nacimiento': '15-04-1954',
+      },
+      sddhh: {
+        cargo: 'DINA-CNI Brigada Lautaro',
+        'fecha ingreso oficio': '20-01-2020',
+        organismo: 'Fach',
+        dirección: 'San Andrés 1148',
+        teléfono: '6444107',
+        'organismo agente': 'FACH',
+        'fecha registro organismo': '25-04-2007',
+        Código: '203944',
+        'hoja de vida': 'no',
+      },
+    },
   })),
   links: initialEdges.map((edge) => ({
     source: edge.source,
     target: edge.target,
-    distance: 100,
     label: 'Mencionado',
   })),
 }

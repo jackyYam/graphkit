@@ -29,6 +29,9 @@ module.exports = {
           'Noto Color Emoji',
         ],
       },
+      boxShadow: {
+        legend: '0px 0px 8px 0px #00000026',
+      },
       colors: {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
