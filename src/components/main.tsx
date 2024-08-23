@@ -9,6 +9,13 @@ import { forceGraphData } from '@/lib/exmapleData'
 import type { ForceGraphMethods, NodeObject } from 'react-force-graph-2d'
 import InfoCard from './InfoCard'
 import { TestNodeData } from '@/lib/exmapleData'
+import useNodeHighlight from '@/lib/nodeInteractions'
+import {
+  drawCapsuleNode,
+  drawCapsuleNodeRing,
+  defaultNodeDrawingSettings,
+  getScaledNodeSettings,
+} from '@/lib/drawings'
 
 const Graph = () => {
   const [zoomLevel, setZoomLevel] = useState(2.8)
@@ -18,11 +25,6 @@ const Graph = () => {
   const [shownData, setShownData] = useState<ForceGraphInputType<TestNodeData>>(data)
   const [categoryFilter, setCategoryFilter] = useState<string[]>([])
   const forceGraphRef = useRef<ForceGraphMethods>(null)
-
-  useEffect(() => {
-    forceGraphRef.current?.d3Force('link')?.distance(30).strength(0.2)
-    forceGraphRef.current?.d3Force('charge')?.strength(-40)
-  }, [data])
 
   const selectedNode = useMemo(
     () => data.nodes.find((node) => node.id === selectedNodeID),
@@ -91,6 +93,13 @@ const Graph = () => {
       setZoomIntervalId(null)
     }
   }
+
+  const drawNode = (node: NodeObject, ctx: CanvasRenderingContext2D, globalScale: number) => {
+    const { fontSize, nodeHeight, nodeRadius, nodeWidth, x, y, ringOffest, ringWidth } =
+      getScaledNodeSettings(defaultNodeDrawingSettings, globalScale, node)
+    const { maxLabelLength, mainTextColor, secondTextColor, nodeRingColor } =
+      defaultNodeDrawingSettings
+  }
   return (
     <div className="flex w-full h-full">
       <div className="w-[750px] h-full relative">
@@ -100,6 +109,7 @@ const Graph = () => {
           onNodeSingleClick={(node) => setSelectedNodeID(node.id)}
           data={shownData}
           onNodeDoubleClick={handleDoubleClick}
+          display="spacious"
           ref={forceGraphRef}
         />
         <div className="px-3 h-9 absolute top-1 left-1/2 transform -translate-x-1/2 bg-white rounded-[36px] shadow-legend">

@@ -1,7 +1,6 @@
 import { categories } from '@/lib/exmapleData'
 import { TestCategory as Category } from '@/lib/exmapleData'
 import type { NodeObject } from 'react-force-graph-2d'
-import { Badge } from '@/components/ui/badge'
 
 interface InfoCardProps {
   node: NodeObject

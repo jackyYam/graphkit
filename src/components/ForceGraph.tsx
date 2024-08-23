@@ -1,7 +1,8 @@
 import ForceGraph2D, { ForceGraphMethods } from 'react-force-graph-2d'
 import type { ForceGraphInputType, CustomNodeObject, CustomLinkObject } from './nodesEdgesTypes'
 import { TestNodeData } from '@/lib/exmapleData'
-
+import useNodeHighlight from '@/lib/nodeInteractions'
+import type { NodeDrawingSettings } from '@/lib/drawings'
 import {
   useRef,
   useEffect,
@@ -10,6 +11,7 @@ import {
   forwardRef,
   ForwardedRef,
   MutableRefObject,
+  useMemo,
 } from 'react'
 import type {
   NodeObject,
@@ -43,6 +45,10 @@ interface ForceGraphProps<NodeData> extends ForGraphPropsBase {
   zoomLevel: number
   selectedNodeID: string | null
   data: ForceGraphInputType<NodeData>
+  hightlightNodes: boolean
+  display: 'spacious' | 'compact'
+  showLabelonHover: boolean
+  nodeDrawingSettings: NodeDrawingSettings
   onNodeSingleClick: (node: NodeObject | CustomNodeObject<NodeData>) => void
   onNodeDoubleClick: (node: NodeObject | CustomNodeObject<NodeData>) => void
 }
@@ -50,36 +56,33 @@ interface ForceGraphProps<NodeData> extends ForGraphPropsBase {
 const ForceGraph = forwardRef<ForceGraphMethods, ForceGraphProps<any>>(
   <NodeData,>(props: ForceGraphProps<NodeData>, ref: ForwardedRef<ForceGraphMethods>) => {
     const figRef = ref as MutableRefObject<ForceGraphMethods>
-    const { zoomLevel, selectedNodeID, data, onNodeSingleClick, onNodeDoubleClick, ...restProps } =
-      props
+    const {
+      zoomLevel,
+      selectedNodeID,
+      data,
+      onNodeSingleClick,
+      onNodeDoubleClick,
+      display,
+      showLabelonHover,
+      nodeDrawingSettings,
+      ...restProps
+    } = props
     const width = 680
     const height = 720
-    const [highlightNodes, setHighlightNodes] = useState(new Set())
-    const [highlightLinks, setHighlightLinks] = useState(new Set())
-    const [hoverNode, setHoverNode] = useState<NodeObject | null>(null)
+    const { highlightNodes, highlightLinks, hoverNode, handleNodeHover } = useNodeHighlight()
+
     const clickTimeout = useRef<NodeJS.Timeout | null>(null)
 
     useEffect(() => {
       figRef.current?.zoom(zoomLevel)
     }, [zoomLevel, figRef])
 
-    const updateHighlight = () => {
-      setHighlightNodes(highlightNodes)
-      setHighlightLinks(highlightLinks)
-    }
-
-    const handleNodeHover = (node: NodeObject | null) => {
-      highlightNodes.clear()
-      highlightLinks.clear()
-      if (node) {
-        highlightNodes.add(node)
-        node.neighbors.forEach((neighbor: NodeObject) => highlightNodes.add(neighbor))
-        node.links.forEach((link: LinkObject) => highlightLinks.add(link))
+    useEffect(() => {
+      if (display === 'spacious') {
+        figRef.current?.d3Force('link')?.distance(30).strength(0.2)
+        figRef.current?.d3Force('charge')?.strength(-40)
       }
-
-      setHoverNode(node || null)
-      updateHighlight()
-    }
+    }, [display, figRef])
 
     const handleNodeClick = useCallback(
       (node: NodeObject) => {
@@ -168,7 +171,7 @@ const ForceGraph = forwardRef<ForceGraphMethods, ForceGraphProps<any>>(
         cooldownTicks={500}
         linkDirectionalArrowLength={5}
         linkDirectionalArrowRelPos={1}
-        nodeLabel={() => ''}
+        nodeLabel={(node) => (showLabelonHover ? node.label : '')}
         nodeCanvasObject={(node, ctx, globalScale) => {
           const label = node.label as string
           const fontSize = 12 / globalScale // Adjust font size as needed
