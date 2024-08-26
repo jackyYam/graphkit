@@ -2,9 +2,9 @@ import { useState, useCallback } from 'react'
 import { NodeObject, LinkObject } from 'react-force-graph-2d'
 
 const useNodeHighlight = () => {
-  const [highlightNodes, setHighlightNodes] = useState<Set<NodeObject>>(new Set())
-  const [highlightLinks, setHighlightLinks] = useState<Set<LinkObject>>(new Set())
-  const [hoverNode, setHoverNode] = useState<NodeObject | null>(null)
+  const [highlightNodes, setHighlightNodes] = useState<Set<string | number>>(new Set())
+  const [highlightLinks, setHighlightLinks] = useState<Set<string>>(new Set())
+  const [hoverNode, setHoverNode] = useState<string | number | null>(null)
 
   const updateHighlight = useCallback(() => {
     setHighlightNodes(new Set(highlightNodes))
@@ -16,12 +16,12 @@ const useNodeHighlight = () => {
       highlightNodes.clear()
       highlightLinks.clear()
       if (node) {
-        highlightNodes.add(node)
-        node.neighbors.forEach((neighbor: NodeObject) => highlightNodes.add(neighbor))
-        node.links.forEach((link: LinkObject) => highlightLinks.add(link))
+        highlightNodes.add(node.id as string)
+        node.neighbors.forEach((neighbor: NodeObject) => highlightNodes.add(neighbor.id as string))
+        node.links.forEach((link: LinkObject) => highlightLinks.add(link.id as string))
       }
 
-      setHoverNode(node || null)
+      setHoverNode(node?.id || null)
       updateHighlight()
     },
     [highlightNodes, highlightLinks, updateHighlight]

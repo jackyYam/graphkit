@@ -13,6 +13,7 @@ import useNodeHighlight from '@/lib/nodeInteractions'
 import {
   drawCapsuleNode,
   drawCapsuleNodeRing,
+  drawLinkWithLabel,
   defaultNodeDrawingSettings,
   getScaledNodeSettings,
 } from '@/lib/drawings'
@@ -25,6 +26,7 @@ const Graph = () => {
   const [shownData, setShownData] = useState<ForceGraphInputType<TestNodeData>>(data)
   const [categoryFilter, setCategoryFilter] = useState<string[]>([])
   const forceGraphRef = useRef<ForceGraphMethods>(null)
+  const { highlightNodes, highlightLinks, hoverNode, handleNodeHover } = useNodeHighlight()
 
   const selectedNode = useMemo(
     () => data.nodes.find((node) => node.id === selectedNodeID),
@@ -40,9 +42,9 @@ const Graph = () => {
   const getUpdatedTime = () => {
     return new Date().toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' })
   }
-  const handleDoubleClick = (node: CustomNodeObject<TestNodeData>) => {
+  const handleDoubleClick = (node: NodeObject) => {
     setData((prev) => {
-      const newNodes: CustomNodeObject<TestNodeData>[] = [
+      const newNodes: NodeObject[] = [
         { ...node, id: `${node.id}-1`, name: `${node.name}-1` },
         { ...node, id: `${node.id}-2`, name: `${node.name}-2` },
         { ...node, id: `${node.id}-3`, name: `${node.name}-3` },
@@ -69,7 +71,8 @@ const Graph = () => {
           b.links.push(link)
         }
       })
-      return { nodes: [...prev.nodes, ...newNodes], links: [...prev.links, ...newLinks] }
+      const newNodesFinal = [...prev.nodes, ...newNodes] as CustomNodeObject<TestNodeData>[]
+      return { nodes: newNodesFinal, links: [...prev.links, ...newLinks] }
     })
   }
 
@@ -77,11 +80,13 @@ const Graph = () => {
     if (categoryFilter.length === 0) {
       setShownData(data)
     } else {
-      const filteredNodes = data.nodes.filter((node) => !categoryFilter.includes(node.category))
+      const filteredNodes = data.nodes.filter(
+        (node) => !categoryFilter.includes(node.category as string)
+      )
       const filteredLinks = data.links.filter(
         (link) =>
-          filteredNodes.includes(link.source as NodeObject) &&
-          filteredNodes.includes(link.target as NodeObject)
+          filteredNodes.includes(link.source as CustomNodeObject<TestNodeData>) &&
+          filteredNodes.includes(link.target as CustomNodeObject<TestNodeData>)
       )
       setShownData({ nodes: filteredNodes, links: filteredLinks })
     }
@@ -95,22 +100,102 @@ const Graph = () => {
   }
 
   const drawNode = (node: NodeObject, ctx: CanvasRenderingContext2D, globalScale: number) => {
-    const { fontSize, nodeHeight, nodeRadius, nodeWidth, x, y, ringOffest, ringWidth } =
-      getScaledNodeSettings(defaultNodeDrawingSettings, globalScale, node)
-    const { maxLabelLength, mainTextColor, secondTextColor, nodeRingColor } =
-      defaultNodeDrawingSettings
+    const {
+      fontSize,
+      nodeHeight: height,
+      nodeRadius: radius,
+      nodeWidth: width,
+      x,
+      y,
+      ringOffset,
+      ringWidth,
+    } = getScaledNodeSettings(defaultNodeDrawingSettings, globalScale, node)
+    const {
+      maxLabelLength,
+      mainTextColor,
+      secondTextColor,
+      nodeRingColor: ringColor,
+      textAlign,
+      textBaseline,
+    } = defaultNodeDrawingSettings
+    ctx.font = `${fontSize}px Sans-Serif`
+    ctx.textAlign = textAlign
+    ctx.textBaseline = textBaseline
+    ctx.fillStyle = mainTextColor // Text color
+    const label = node.label as string
+    drawCapsuleNode({
+      x,
+      y,
+      radius,
+      width,
+      height,
+      ctx,
+      label,
+      node,
+      maxLabelLength,
+      mainTextColor,
+      secondTextColor,
+    })
+
+    if (node.id === selectedNodeID) {
+      drawCapsuleNodeRing({
+        x,
+        y,
+        radius,
+        offset: ringOffset,
+        ringWidth,
+        ringColor,
+        ctx,
+        width,
+        height,
+      })
+    } else if (node.id === hoverNode) {
+      drawCapsuleNodeRing({
+        x,
+        y,
+        radius,
+        offset: ringOffset,
+        ringWidth,
+        ringColor: 'red',
+        ctx,
+        width,
+        height,
+      })
+    } else if (highlightNodes.has(node.id as string)) {
+      drawCapsuleNodeRing({
+        x,
+        y,
+        radius,
+        offset: ringOffset,
+        ringWidth,
+        ringColor: 'lightblue',
+        ctx,
+        width,
+        height,
+      })
+    }
   }
+
   return (
     <div className="flex w-full h-full">
-      <div className="w-[750px] h-full relative">
-        <ForceGraph<TestNodeData>
+      <div className="w-[750px] h-[750px] relative">
+        <ForceGraph
           zoomLevel={zoomLevel}
           selectedNodeID={selectedNodeID}
-          onNodeSingleClick={(node) => setSelectedNodeID(node.id)}
+          onNodeSingleClick={(node) => setSelectedNodeID(node.id as string)}
           data={shownData}
           onNodeDoubleClick={handleDoubleClick}
-          display="spacious"
           ref={forceGraphRef}
+          nodeCanvasObject={drawNode}
+          onNodeHover={handleNodeHover}
+          linkDirectionalParticles={4}
+          linkDirectionalParticleWidth={(link) => (highlightLinks.has(link.id) ? 4 : 0)}
+          linkCanvasObject={(link, ctx, globalScale) => {
+            drawLinkWithLabel({ link, ctx, globalScale })
+          }}
+          fixNodeOnDrag
+          showLabelOnHover={false}
+          nodeDrawingSettings={defaultNodeDrawingSettings}
         />
         <div className="px-3 h-9 absolute top-1 left-1/2 transform -translate-x-1/2 bg-white rounded-[36px] shadow-legend">
           <ToggleGroup
@@ -133,35 +218,6 @@ const Graph = () => {
               </ToggleGroupItem>
             ))}
           </ToggleGroup>
-        </div>
-        <div className="absolute bottom-2 left-0 flex justify-between w-full items-center px-3">
-          <div className="flex space-x-2">
-            <Button
-              className="rounded-full"
-              variant="outline"
-              size="icon"
-              onMouseDown={() => handleMouseDown(0.5)}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
-              onClick={() => setZoomLevel((prev) => prev + 0.5)}
-            >
-              <Plus className="h-4 w-4" />
-            </Button>
-            <Button
-              className="rounded-full"
-              variant="outline"
-              size="icon"
-              onMouseDown={() => handleMouseDown(-0.5)}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
-              onClick={() => setZoomLevel((prev) => prev - 0.5)}
-            >
-              <Minus className="h-4 w-4" />
-            </Button>
-          </div>
-          <p className="text-[12px]">
-            <b>Última actualización: </b> {getUpdatedTime()}
-          </p>
         </div>
       </div>
       <div className="flex-grow border-l-2">{selectedNode && <InfoCard node={selectedNode} />}</div>

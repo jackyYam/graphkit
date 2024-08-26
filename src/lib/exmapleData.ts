@@ -168,6 +168,7 @@ const forceGraphData: ForceGraphInputType<TestNodeData> = {
     source: edge.source,
     target: edge.target,
     label: 'Mencionado',
+    id: edge.id,
   })),
 }
 
