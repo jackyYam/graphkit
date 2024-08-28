@@ -1,4 +1,4 @@
-import { ForceGraphInputType, NodeCategories } from '@/components/nodesEdgesTypes'
+import { ForceGraphInputType, NodeCategories } from '@/lib/nodesEdgesTypes'
 import { LinkObject } from 'react-force-graph-2d'
 export const categories: NodeCategories = {
   people: {

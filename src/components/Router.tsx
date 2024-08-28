@@ -1,8 +1,5 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Layout from './Layout'
-import Graph from './Graph'
-import { MyDiagram } from './Regraph'
-import ForceGraph from './ForceGraph'
 import MainGraph from './main'
 const router = createBrowserRouter([
   {

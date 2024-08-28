@@ -1,17 +1,13 @@
 import { useState } from 'react'
+import { useZoomStore } from '@/stores/graphstore'
 
-export const useZoomLevel = (
-  initialZoomLevel = 2.8,
-  zoomStep = 0.5,
-  clickZoomStep = 0.5,
-  pressInterval = 150
-) => {
-  const [zoomLevel, setZoomLevel] = useState(initialZoomLevel)
+export const useZoomControl = (zoomStep = 0.5, clickZoomStep = 0.5, pressInterval = 150) => {
+  const adjustZoomLevel = useZoomStore((state) => state.adjustZoomLevel)
   const [zoomIntervalId, setZoomIntervalId] = useState<NodeJS.Timeout | null>(null)
 
   const handleMouseDown = (zoomIn: boolean) => {
     const id = setInterval(() => {
-      setZoomLevel((prev) => (zoomIn ? prev + zoomStep : prev - zoomStep))
+      adjustZoomLevel(zoomIn ? zoomStep : 0 - zoomStep)
     }, pressInterval) // Adjust the interval time as needed
     setZoomIntervalId(id)
   }
@@ -22,8 +18,8 @@ export const useZoomLevel = (
     }
   }
   const handleClick = (zoomIn: boolean) => {
-    setZoomLevel((prev) => (zoomIn ? prev + clickZoomStep : prev - clickZoomStep))
+    adjustZoomLevel(zoomIn ? clickZoomStep : 0 - clickZoomStep)
   }
 
-  return { zoomLevel, handleMouseDown, handleMouseUp, handleClick }
+  return { handleMouseDown, handleMouseUp, handleClick }
 }

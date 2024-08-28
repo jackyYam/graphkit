@@ -1,15 +1,13 @@
 import ForceGraph from './ForceGraph'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Button } from './ui/button'
-import { Plus, Minus } from 'lucide-react'
 import { categories } from '@/lib/exmapleData'
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { type ForceGraphInputType, CustomNodeObject } from './nodesEdgesTypes'
+import { type ForceGraphInputType, CustomNodeObject } from '../lib/nodesEdgesTypes'
 import { forceGraphData } from '@/lib/exmapleData'
 import type { ForceGraphMethods, NodeObject } from 'react-force-graph-2d'
 import InfoCard from './InfoCard'
 import { TestNodeData } from '@/lib/exmapleData'
 import useNodeHighlight from '@/lib/nodeInteractions'
+import { distantLayoutForce } from '@/lib/forces'
 import {
   drawCapsuleNode,
   drawCapsuleNodeRing,
@@ -17,31 +15,27 @@ import {
   defaultNodeDrawingSettings,
   getScaledNodeSettings,
 } from '@/lib/drawings'
+import CategoryFilter from './CategoryFilter'
+import { useGeneralSettingsStore } from '@/stores/graphstore'
 
 const Graph = () => {
-  const [zoomLevel, setZoomLevel] = useState(2.8)
-  const [zoomIntervakId, setZoomIntervalId] = useState<NodeJS.Timeout | null>(null)
   const [selectedNodeID, setSelectedNodeID] = useState<string | null>(null)
   const [data, setData] = useState<ForceGraphInputType<TestNodeData>>(forceGraphData)
   const [shownData, setShownData] = useState<ForceGraphInputType<TestNodeData>>(data)
   const [categoryFilter, setCategoryFilter] = useState<string[]>([])
   const forceGraphRef = useRef<ForceGraphMethods>(null)
   const { highlightNodes, highlightLinks, hoverNode, handleNodeHover } = useNodeHighlight()
+  const setCategories = useGeneralSettingsStore((state) => state.setCategories)
 
   const selectedNode = useMemo(
     () => data.nodes.find((node) => node.id === selectedNodeID),
     [data.nodes, selectedNodeID]
   )
 
-  const handleMouseDown = (zoomChange: number) => {
-    const id = setInterval(() => {
-      setZoomLevel((prev) => prev + zoomChange)
-    }, 150) // Adjust the interval time as needed
-    setZoomIntervalId(id)
-  }
-  const getUpdatedTime = () => {
-    return new Date().toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' })
-  }
+  useEffect(() => {
+    setCategories(categories)
+  }, [setCategories])
+
   const handleDoubleClick = (node: NodeObject) => {
     setData((prev) => {
       const newNodes: NodeObject[] = [
@@ -91,13 +85,6 @@ const Graph = () => {
       setShownData({ nodes: filteredNodes, links: filteredLinks })
     }
   }, [categoryFilter, data])
-
-  const handleMouseUp = () => {
-    if (zoomIntervakId) {
-      clearInterval(zoomIntervakId)
-      setZoomIntervalId(null)
-    }
-  }
 
   const drawNode = (node: NodeObject, ctx: CanvasRenderingContext2D, globalScale: number) => {
     const {
@@ -180,8 +167,7 @@ const Graph = () => {
     <div className="flex w-full h-full">
       <div className="w-[750px] h-[750px] relative">
         <ForceGraph
-          zoomLevel={zoomLevel}
-          selectedNodeID={selectedNodeID}
+          initialZoomLevel={2.8}
           onNodeSingleClick={(node) => setSelectedNodeID(node.id as string)}
           data={shownData}
           onNodeDoubleClick={handleDoubleClick}
@@ -189,36 +175,18 @@ const Graph = () => {
           nodeCanvasObject={drawNode}
           onNodeHover={handleNodeHover}
           linkDirectionalParticles={4}
+          simpleForceSettings={distantLayoutForce}
           linkDirectionalParticleWidth={(link) => (highlightLinks.has(link.id) ? 4 : 0)}
           linkCanvasObject={(link, ctx, globalScale) => {
             drawLinkWithLabel({ link, ctx, globalScale })
           }}
-          fixNodeOnDrag
-          showLabelOnHover={false}
-          nodeDrawingSettings={defaultNodeDrawingSettings}
+          FooterNoteComponent={() => (
+            <div>
+              <b>Última actualización</b>: 15-03-24 10:35
+            </div>
+          )}
         />
-        <div className="px-3 h-9 absolute top-1 left-1/2 transform -translate-x-1/2 bg-white rounded-[36px] shadow-legend">
-          <ToggleGroup
-            type="multiple"
-            onValueChange={(v: string[]) => {
-              setCategoryFilter(v)
-            }}
-          >
-            {Object.entries(categories).map(([categoryKey, categoryValue]) => (
-              <ToggleGroupItem
-                key={categoryKey}
-                className="flex space-x-2 items-center"
-                value={categoryKey}
-              >
-                <div
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: categoryValue.color }}
-                ></div>
-                <p className="text-[11px]">{categoryValue.es}</p>
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
-        </div>
+        <CategoryFilter setCategoryFilter={setCategoryFilter} />
       </div>
       <div className="flex-grow border-l-2">{selectedNode && <InfoCard node={selectedNode} />}</div>
     </div>

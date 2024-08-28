@@ -1,12 +1,12 @@
-import { categories } from '@/lib/exmapleData'
 import { TestCategory as Category } from '@/lib/exmapleData'
 import type { NodeObject } from 'react-force-graph-2d'
-
+import { useGeneralSettingsStore } from '@/stores/graphstore'
 interface InfoCardProps {
   node: NodeObject
 }
 
-const InforCardTitle = ({ node }: InfoCardProps) => {
+export const InforCardTitle = ({ node }: InfoCardProps) => {
+  const categories = useGeneralSettingsStore((state) => state.categories)
   return (
     <div>
       <div
@@ -21,13 +21,13 @@ const InforCardTitle = ({ node }: InfoCardProps) => {
     </div>
   )
 }
-interface InfoCardSectionProps {
+interface InfoCardColumnSectionProps {
   title: string
   data: {
     [key: string]: string
   }
 }
-const InfoCardSection = ({ title, data }: InfoCardSectionProps) => {
+export const InfoCardColumnSection = ({ title, data }: InfoCardColumnSectionProps) => {
   return (
     <div className="mt-5">
       <h3 className="font-bold text-sm mb-2">{title}</h3>
@@ -47,8 +47,8 @@ const InfoCard = ({ node }: InfoCardProps) => {
   return (
     <div className="w-full h-full p-5 pr-1">
       <InforCardTitle node={node} />
-      <InfoCardSection title="Datos plataforma" data={node.data['platform']} />
-      <InfoCardSection title="Datos SDDHH" data={node.data['sddhh']} />
+      <InfoCardColumnSection title="Datos plataforma" data={node.data['platform']} />
+      <InfoCardColumnSection title="Datos SDDHH" data={node.data['sddhh']} />
     </div>
   )
 }
