@@ -167,6 +167,8 @@ const Graph = () => {
     <div className="flex w-full h-full">
       <div className="w-[750px] h-[750px] relative">
         <ForceGraph
+          width={680}
+          height={720}
           initialZoomLevel={2.8}
           onNodeSingleClick={(node) => setSelectedNodeID(node.id as string)}
           data={shownData}

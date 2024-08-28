@@ -37,8 +37,6 @@ const ForceGraph = forwardRef<ForceGraphMethods, ForceGraphProps<any>>(
       FooterNoteComponent,
       ...restProps
     } = props
-    const width = 680
-    const height = 720
 
     const clickTimeout = useRef<NodeJS.Timeout | null>(null)
 
@@ -84,8 +82,6 @@ const ForceGraph = forwardRef<ForceGraphMethods, ForceGraphProps<any>>(
     return (
       <div className="w-full h-full relative">
         <ForceGraph2D
-          width={width}
-          height={height}
           ref={figRef}
           graphData={data}
           cooldownTicks={500}
