@@ -22,3 +22,13 @@ export const useGeneralSettingsStore = create<GeneralSettingsState>((set) => ({
   categories: {},
   setCategories: (categories) => set({ categories }),
 }))
+
+export interface selectedNodeStore {
+  selectedNodeID: string | null
+  setSelectedNodeID: (id: string | null) => void
+}
+
+export const useSelectedNodeStore = create<selectedNodeStore>((set) => ({
+  selectedNodeID: null,
+  setSelectedNodeID: (id) => set({ selectedNodeID: id }),
+}))

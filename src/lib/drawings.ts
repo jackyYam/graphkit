@@ -203,3 +203,87 @@ export const drawLinkWithLabel = ({
   ctx.fillStyle = textColor
   ctx.fillText(label, x, y)
 }
+
+export const drawDefaultNode = (
+  node: NodeObject,
+  ctx: CanvasRenderingContext2D,
+  globalScale: number,
+  isSelected = false,
+  isHovered = false,
+  isHighlighted = false
+) => {
+  const {
+    fontSize,
+    nodeHeight: height,
+    nodeRadius: radius,
+    nodeWidth: width,
+    x,
+    y,
+    ringOffset,
+    ringWidth,
+  } = getScaledNodeSettings(defaultNodeDrawingSettings, globalScale, node)
+  const {
+    maxLabelLength,
+    mainTextColor,
+    secondTextColor,
+    nodeRingColor: ringColor,
+    textAlign,
+    textBaseline,
+  } = defaultNodeDrawingSettings
+  ctx.font = `${fontSize}px Sans-Serif`
+  ctx.textAlign = textAlign
+  ctx.textBaseline = textBaseline
+  ctx.fillStyle = mainTextColor // Text color
+  const label = node.label as string
+  drawCapsuleNode({
+    x,
+    y,
+    radius,
+    width,
+    height,
+    ctx,
+    label,
+    node,
+    maxLabelLength,
+    mainTextColor,
+    secondTextColor,
+  })
+
+  if (isSelected) {
+    drawCapsuleNodeRing({
+      x,
+      y,
+      radius,
+      offset: ringOffset,
+      ringWidth,
+      ringColor,
+      ctx,
+      width,
+      height,
+    })
+  } else if (isHovered) {
+    drawCapsuleNodeRing({
+      x,
+      y,
+      radius,
+      offset: ringOffset,
+      ringWidth,
+      ringColor: 'red',
+      ctx,
+      width,
+      height,
+    })
+  } else if (isHighlighted) {
+    drawCapsuleNodeRing({
+      x,
+      y,
+      radius,
+      offset: ringOffset,
+      ringWidth,
+      ringColor: 'lightblue',
+      ctx,
+      width,
+      height,
+    })
+  }
+}

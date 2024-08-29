@@ -1,6 +1,7 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Layout from './Layout'
 import MainGraph from './main'
+import QuickStart from './QuickStart'
 const router = createBrowserRouter([
   {
     path: '/',
@@ -9,7 +10,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: '',
-        element: <div>hola</div>,
+        element: <QuickStart />,
       },
       {
         path: 'page1',

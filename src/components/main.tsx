@@ -86,108 +86,10 @@ const Graph = () => {
     }
   }, [categoryFilter, data])
 
-  const drawNode = (node: NodeObject, ctx: CanvasRenderingContext2D, globalScale: number) => {
-    const {
-      fontSize,
-      nodeHeight: height,
-      nodeRadius: radius,
-      nodeWidth: width,
-      x,
-      y,
-      ringOffset,
-      ringWidth,
-    } = getScaledNodeSettings(defaultNodeDrawingSettings, globalScale, node)
-    const {
-      maxLabelLength,
-      mainTextColor,
-      secondTextColor,
-      nodeRingColor: ringColor,
-      textAlign,
-      textBaseline,
-    } = defaultNodeDrawingSettings
-    ctx.font = `${fontSize}px Sans-Serif`
-    ctx.textAlign = textAlign
-    ctx.textBaseline = textBaseline
-    ctx.fillStyle = mainTextColor // Text color
-    const label = node.label as string
-    drawCapsuleNode({
-      x,
-      y,
-      radius,
-      width,
-      height,
-      ctx,
-      label,
-      node,
-      maxLabelLength,
-      mainTextColor,
-      secondTextColor,
-    })
-
-    if (node.id === selectedNodeID) {
-      drawCapsuleNodeRing({
-        x,
-        y,
-        radius,
-        offset: ringOffset,
-        ringWidth,
-        ringColor,
-        ctx,
-        width,
-        height,
-      })
-    } else if (node.id === hoverNode) {
-      drawCapsuleNodeRing({
-        x,
-        y,
-        radius,
-        offset: ringOffset,
-        ringWidth,
-        ringColor: 'red',
-        ctx,
-        width,
-        height,
-      })
-    } else if (highlightNodes.has(node.id as string)) {
-      drawCapsuleNodeRing({
-        x,
-        y,
-        radius,
-        offset: ringOffset,
-        ringWidth,
-        ringColor: 'lightblue',
-        ctx,
-        width,
-        height,
-      })
-    }
-  }
-
   return (
     <div className="flex w-full h-full">
       <div className="w-[750px] h-[750px] relative">
-        <ForceGraph
-          width={680}
-          height={720}
-          initialZoomLevel={2.8}
-          onNodeSingleClick={(node) => setSelectedNodeID(node.id as string)}
-          data={shownData}
-          onNodeDoubleClick={handleDoubleClick}
-          ref={forceGraphRef}
-          nodeCanvasObject={drawNode}
-          onNodeHover={handleNodeHover}
-          linkDirectionalParticles={4}
-          simpleForceSettings={distantLayoutForce}
-          linkDirectionalParticleWidth={(link) => (highlightLinks.has(link.id) ? 4 : 0)}
-          linkCanvasObject={(link, ctx, globalScale) => {
-            drawLinkWithLabel({ link, ctx, globalScale })
-          }}
-          FooterNoteComponent={() => (
-            <div>
-              <b>Última actualización</b>: 15-03-24 10:35
-            </div>
-          )}
-        />
+        <ForceGraph data={shownData} simpleForceSettings={distantLayoutForce} />
         <CategoryFilter setCategoryFilter={setCategoryFilter} />
       </div>
       <div className="flex-grow border-l-2">{selectedNode && <InfoCard node={selectedNode} />}</div>

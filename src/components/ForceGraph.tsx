@@ -7,6 +7,8 @@ import type { ForceGraphProps as ForGraphPropsBase, NodeObject } from 'react-for
 import ForceGraph2D, { ForceGraphMethods } from 'react-force-graph-2d'
 import type { ForceGraphInputType } from '../lib/nodesEdgesTypes'
 import { Button } from './ui/button'
+import { drawDefaultNode } from '@/lib/drawings'
+import { useSelectedNodeStore } from '@/stores/graphstore'
 
 interface ForceGraphProps<NodeData> extends ForGraphPropsBase {
   initialZoomLevel?: number
@@ -16,22 +18,35 @@ interface ForceGraphProps<NodeData> extends ForGraphPropsBase {
   simpleForceSettings?: simpleForceSettings
   showDefaultZoomControl?: boolean
   ZoomControlComponente?: React.ComponentType
-  onNodeSingleClick: (node: NodeObject) => void
-  onNodeDoubleClick: (node: NodeObject) => void
+  onNodeSingleClick?: (node: NodeObject) => void
+  onNodeDoubleClick?: (node: NodeObject) => void
   FooterNoteComponent?: React.ComponentType
 }
 
 const ForceGraph = forwardRef<ForceGraphMethods, ForceGraphProps<any>>(
   <NodeData,>(props: ForceGraphProps<NodeData>, ref: ForwardedRef<ForceGraphMethods>) => {
     const figRef = ref as MutableRefObject<ForceGraphMethods>
+    const defaultRef = useRef<ForceGraphMethods>(null)
+    const setSelectedNodeID = useSelectedNodeStore((state) => state.setSelectedNodeID)
+    const selectedNodeID = useSelectedNodeStore((state) => state.selectedNodeID)
+    const graphRef = figRef || defaultRef
+
     const {
       initialZoomLevel = 2.8,
       data,
-      onNodeSingleClick,
-      onNodeDoubleClick,
+      width = 680,
+      height = 720,
+      onNodeSingleClick = (node: NodeObject) => {
+        setSelectedNodeID(node.id as string)
+      },
+      onNodeDoubleClick = (node: NodeObject) => {
+        console.log('Double Clicked', node.id)
+      },
       showLabelOnHover = false,
       fixNodeOnDrag = true,
       simpleForceSettings,
+      nodeCanvasObject = (node, ctx, globalScale) =>
+        drawDefaultNode(node, ctx, globalScale, node.id === selectedNodeID),
       showDefaultZoomControl = true,
       ZoomControlComponente,
       FooterNoteComponent,
@@ -49,18 +64,18 @@ const ForceGraph = forwardRef<ForceGraphMethods, ForceGraphProps<any>>(
     }, [initialZoomLevel, setZoomLevel])
 
     useEffect(() => {
-      figRef.current?.zoom(zoomLevel)
-    }, [zoomLevel, figRef])
+      graphRef.current?.zoom(zoomLevel)
+    }, [zoomLevel, graphRef])
 
     useEffect(() => {
       if (simpleForceSettings) {
-        figRef.current
+        graphRef.current
           ?.d3Force('link')
           ?.distance(simpleForceSettings.linkDistance)
           .strength(simpleForceSettings.linkStrength)
-        figRef.current?.d3Force('charge')?.strength(simpleForceSettings.chargeStrength)
+        graphRef.current?.d3Force('charge')?.strength(simpleForceSettings.chargeStrength)
       }
-    }, [figRef, simpleForceSettings])
+    }, [graphRef, simpleForceSettings])
 
     const handleNodeClick = useCallback(
       (node: NodeObject) => {
@@ -82,8 +97,10 @@ const ForceGraph = forwardRef<ForceGraphMethods, ForceGraphProps<any>>(
     return (
       <div className="w-full h-full relative">
         <ForceGraph2D
-          ref={figRef}
+          ref={graphRef}
           graphData={data}
+          width={width}
+          height={height}
           cooldownTicks={500}
           linkDirectionalArrowLength={5}
           linkDirectionalArrowRelPos={1}
@@ -98,6 +115,7 @@ const ForceGraph = forwardRef<ForceGraphMethods, ForceGraphProps<any>>(
             }
           }}
           linkCanvasObjectMode={() => 'after'}
+          nodeCanvasObject={nodeCanvasObject}
           {...restProps}
         />
         <div className="absolute bottom-2 left-0 flex justify-between w-full items-center px-3">
